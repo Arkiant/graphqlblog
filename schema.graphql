@@ -1,0 +1,22 @@
+type Blog {
+    id: String!
+    author_id: String!
+    title: String!
+    content: String!
+}
+
+type Query {
+    entries(search: String = ""): [Blog!]!
+}
+
+input NewBlog {
+    author_id: String!
+    title: String!
+    content: String!
+}
+
+type Mutation {
+    createBlog(input: NewBlog): Blog!
+    updateBlog(id: String, input: NewBlog): Blog!
+    deleteBlog(id: String):[Blog!]!
+}
