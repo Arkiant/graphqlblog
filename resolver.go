@@ -2,8 +2,8 @@ package graphqlblog
 
 import (
 	"context"
+	"fmt"
 	"io"
-	"log"
 
 	"github.com/arkiant/grpc-go-course/blog/blogpb"
 	"google.golang.org/grpc"
@@ -37,7 +37,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 	opts := grpc.WithInsecure()
 	cc, err := grpc.Dial(":50051", opts)
 	if err != nil {
-		log.Fatalf("Could not connect: %v\n", err)
+		return nil, fmt.Errorf("Could not connect: %v", err)
 	}
 	defer cc.Close()
 
@@ -49,7 +49,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 	if *search == "" {
 		stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
 		if err != nil {
-			log.Fatalf("Error while calling ListBlog RPC: %v\n", err)
+			return nil, fmt.Errorf("Error while calling ListBlog RPC: %v", err)
 		}
 
 		for {
@@ -58,7 +58,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 				break
 			}
 			if err != nil {
-				log.Fatalf("Something happened: %v\n", err)
+				return nil, fmt.Errorf("Something happened: %v", err)
 			}
 
 			blog := res.GetBlog()
@@ -74,7 +74,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 		// if search has id retrieve a single collection
 		res, err := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *search})
 		if err != nil {
-			log.Fatalf("Something happened: %v\n", err)
+			return nil, fmt.Errorf("Something happened: %v", err)
 		}
 
 		blog := res.GetBlog()
