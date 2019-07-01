@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/arkiant/graphqlblog/blogclient"
+
 	"github.com/arkiant/grpc-go-course/blog/blogpb"
-	"google.golang.org/grpc"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 type Resolver struct{}
@@ -34,14 +35,11 @@ type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, error) {
 
-	opts := grpc.WithInsecure()
-	cc, err := grpc.Dial(":50051", opts)
+	c, err := blogclient.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("Could not connect: %v", err)
 	}
-	defer cc.Close()
-
-	c := blogpb.NewBlogServiceClient(cc)
+	defer blogclient.Close()
 
 	result := make([]*Blog, 0)
 
