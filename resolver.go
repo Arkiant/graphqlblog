@@ -21,9 +21,34 @@ func (r *Resolver) Query() QueryResolver {
 
 type mutationResolver struct{ *Resolver }
 
+// CreateBlog create a blog connected by grpc
 func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blog, error) {
-	panic("not implemented")
+	c, err := blogclient.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer blogclient.Close()
+
+	res, err := c.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{
+		Blog: &blogpb.Blog{
+			AuthorId: input.AuthorID,
+			Title:    input.Title,
+			Content:  input.Content,
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Cannot create blog: %v", err)
+	}
+
+	blogResult := res.GetBlog()
+	return &Blog{
+		ID:       blogResult.GetId(),
+		AuthorID: blogResult.GetAuthorId(),
+		Title:    blogResult.GetTitle(),
+		Content:  blogResult.GetContent(),
+	}, nil
 }
+
 func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *NewBlog) (*Blog, error) {
 	panic("not implemented")
 }
@@ -33,6 +58,7 @@ func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog,
 
 type queryResolver struct{ *Resolver }
 
+// Entries retrieve all entries from database
 func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, error) {
 
 	c, err := blogclient.Connect()
