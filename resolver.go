@@ -87,7 +87,31 @@ func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *Ne
 	return pbBlogToBlog(blog), nil
 }
 func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog, error) {
-	panic("not implemented")
+	c, err := blogclient.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer blogclient.Close()
+
+	if *id == "" || id == nil {
+		return nil, fmt.Errorf("Cannot parse a null ID")
+	}
+
+	res, err := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *id})
+	if err != nil {
+		return nil, fmt.Errorf("Something happened: %v", err)
+	}
+
+	blog := res.GetBlog()
+	result := make([]*Blog, 0)
+	result = append(result, pbBlogToBlog(blog))
+
+	_, errDelete := c.DeleteBlog(context.Background(), &blogpb.DeleteBlogRequest{BlogId: *id})
+	if errDelete != nil {
+		return nil, fmt.Errorf("Cannot delete id %s, error: %v", *id, errDelete)
+	}
+
+	return result, nil
 }
 
 type queryResolver struct{ *Resolver }
