@@ -50,7 +50,37 @@ func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blo
 }
 
 func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *NewBlog) (*Blog, error) {
-	panic("not implemented")
+	c, err := blogclient.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer blogclient.Close()
+
+	if *id == "" || id == nil {
+		return nil, fmt.Errorf("Cannot parse a null ID")
+	}
+
+	res, err := c.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{
+		Blog: &blogpb.Blog{
+			Id:       *id,
+			AuthorId: input.AuthorID,
+			Title:    input.Title,
+			Content:  input.Content,
+		},
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Cannot update blog id %s: %v", *id, err)
+	}
+
+	blog := res.GetBlog()
+
+	return &Blog{
+		ID:       blog.GetId(),
+		AuthorID: blog.GetAuthorId(),
+		Title:    blog.GetTitle(),
+		Content:  blog.GetContent(),
+	}, nil
 }
 func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog, error) {
 	panic("not implemented")
