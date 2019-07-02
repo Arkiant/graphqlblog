@@ -46,13 +46,7 @@ type mutationResolver struct{ *Resolver }
 
 // CreateBlog create a blog connected by grpc
 func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blog, error) {
-	c, err := blogclient.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect: %v", err)
-	}
-	defer blogclient.Close()
-
-	res, err := c.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{
+	res, err := blogclient.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{
 		Blog: newBlogToPbBlog(nil, input),
 	})
 	if err != nil {

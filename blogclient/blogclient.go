@@ -20,6 +20,7 @@
 package blogclient
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/arkiant/grpc-go-course/blog/blogpb"
@@ -55,4 +56,15 @@ func Close() error {
 		return cc.Close()
 	}
 	return nil
+}
+
+// CreateBlog create a blog connected by grpc
+func CreateBlog(ctx context.Context, blog *blogpb.CreateBlogRequest) (*blogpb.CreateBlogResponse, error) {
+	c, err := Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer Close()
+
+	return c.CreateBlog(context.Background(), blog)
 }
