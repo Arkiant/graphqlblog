@@ -3,7 +3,6 @@ package graphqlblog
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/arkiant/graphqlblog/blogclient"
 
@@ -98,44 +97,28 @@ type queryResolver struct{ *Resolver }
 // Entries retrieve all entries from database
 func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, error) {
 
-	c, err := blogclient.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect: %v", err)
-	}
-	defer blogclient.Close()
-
 	result := make([]*Blog, 0)
 
 	// if search is empty retrieve all collection
 	if *search == "" {
-		stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+
+		res, err := blogclient.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
 		if err != nil {
-			return nil, fmt.Errorf("Error while calling ListBlog RPC: %v", err)
+			return nil, err
 		}
 
-		for {
-			res, err := stream.Recv()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return nil, fmt.Errorf("Something happened: %v", err)
-			}
-
-			blog := res.GetBlog()
-
+		for _, blog := range res {
 			result = append(result, pbBlogToBlog(blog))
 		}
+
 	} else {
 		// if search has id retrieve a single collection
-		res, err := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *search})
+		res, err := blogclient.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *search})
 		if err != nil {
-			return nil, fmt.Errorf("Something happened: %v", err)
+			return nil, err
 		}
 
-		blog := res.GetBlog()
-
-		result = append(result, pbBlogToBlog(blog))
+		result = append(result, pbBlogToBlog(res))
 
 	}
 

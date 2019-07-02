@@ -22,6 +22,7 @@ package blogclient
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/arkiant/grpc-go-course/blog/blogpb"
 	"google.golang.org/grpc"
@@ -101,4 +102,53 @@ func DeleteBlog(ctx context.Context, id *string) (*blogpb.Blog, error) {
 	}
 
 	return blog, nil
+}
+
+// ListBlog retrieve all from database
+func ListBlog(ctx context.Context, blog *blogpb.ListBlogRequest) ([]*blogpb.Blog, error) {
+	c, err := Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer Close()
+
+	stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("Error while calling ListBlog RPC: %v", err)
+	}
+
+	result := make([]*blogpb.Blog, 0)
+
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Something happened: %v", err)
+		}
+
+		blog := res.GetBlog()
+
+		result = append(result, blog)
+
+	}
+
+	return result, nil
+}
+
+// ReadBlog retrieve a single collection
+func ReadBlog(ctx context.Context, blog *blogpb.ReadBlogRequest) (*blogpb.Blog, error) {
+	c, err := Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer Close()
+
+	res, err := c.ReadBlog(context.Background(), blog)
+	if err != nil {
+		return nil, fmt.Errorf("Something happened: %v", err)
+	}
+
+	return res.GetBlog(), nil
 }
