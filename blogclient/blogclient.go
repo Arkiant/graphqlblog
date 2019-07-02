@@ -68,3 +68,14 @@ func CreateBlog(ctx context.Context, blog *blogpb.CreateBlogRequest) (*blogpb.Cr
 
 	return c.CreateBlog(context.Background(), blog)
 }
+
+// UpdateBlog update a blog
+func UpdateBlog(ctx context.Context, blog *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error) {
+	c, err := Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer Close()
+
+	return c.UpdateBlog(context.Background(), blog)
+}

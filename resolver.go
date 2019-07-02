@@ -59,17 +59,11 @@ func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blo
 
 // UpdateBlog update a blog by id
 func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *NewBlog) (*Blog, error) {
-	c, err := blogclient.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect: %v", err)
-	}
-	defer blogclient.Close()
-
 	if *id == "" || id == nil {
 		return nil, fmt.Errorf("Cannot parse a null ID")
 	}
 
-	res, err := c.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{
+	res, err := blogclient.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{
 		Blog: newBlogToPbBlog(id, input),
 	})
 
