@@ -63,6 +63,7 @@ func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blo
 	return pbBlogToBlog(blogResult), nil
 }
 
+// UpdateBlog update a blog by id
 func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *NewBlog) (*Blog, error) {
 	c, err := blogclient.Connect()
 	if err != nil {
@@ -86,6 +87,8 @@ func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *Ne
 
 	return pbBlogToBlog(blog), nil
 }
+
+// DeleteBlog delete a blog by id
 func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog, error) {
 	c, err := blogclient.Connect()
 	if err != nil {
