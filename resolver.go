@@ -78,29 +78,17 @@ func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *Ne
 
 // DeleteBlog delete a blog by id
 func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog, error) {
-	c, err := blogclient.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect: %v", err)
-	}
-	defer blogclient.Close()
-
 	if *id == "" || id == nil {
 		return nil, fmt.Errorf("Cannot parse a null ID")
 	}
 
-	res, err := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *id})
+	res, err := blogclient.DeleteBlog(context.Background(), id)
 	if err != nil {
-		return nil, fmt.Errorf("Something happened: %v", err)
+		return nil, err
 	}
 
-	blog := res.GetBlog()
 	result := make([]*Blog, 0)
-	result = append(result, pbBlogToBlog(blog))
-
-	_, errDelete := c.DeleteBlog(context.Background(), &blogpb.DeleteBlogRequest{BlogId: *id})
-	if errDelete != nil {
-		return nil, fmt.Errorf("Cannot delete id %s, error: %v", *id, errDelete)
-	}
+	result = append(result, pbBlogToBlog(res))
 
 	return result, nil
 }

@@ -79,3 +79,26 @@ func UpdateBlog(ctx context.Context, blog *blogpb.UpdateBlogRequest) (*blogpb.Up
 
 	return c.UpdateBlog(context.Background(), blog)
 }
+
+// DeleteBlog update a blog
+func DeleteBlog(ctx context.Context, id *string) (*blogpb.Blog, error) {
+	c, err := Connect()
+	if err != nil {
+		return nil, fmt.Errorf("Could not connect: %v", err)
+	}
+	defer Close()
+
+	res, err := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: *id})
+	if err != nil {
+		return nil, fmt.Errorf("Something happened: %v", err)
+	}
+
+	blog := res.GetBlog()
+
+	_, errDelete := c.DeleteBlog(context.Background(), &blogpb.DeleteBlogRequest{BlogId: *id})
+	if errDelete != nil {
+		return nil, fmt.Errorf("Cannot delete id %s, error: %v", *id, errDelete)
+	}
+
+	return blog, nil
+}
