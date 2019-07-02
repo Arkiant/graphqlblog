@@ -19,6 +19,29 @@ func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
 
+func newBlogToPbBlog(id *string, input *NewBlog) *blogpb.Blog {
+	blog := &blogpb.Blog{
+		AuthorId: input.AuthorID,
+		Title:    input.Title,
+		Content:  input.Content,
+	}
+
+	if id != nil {
+		blog.Id = *id
+	}
+
+	return blog
+}
+
+func pbBlogToBlog(input *blogpb.Blog) *Blog {
+	return &Blog{
+		ID:       input.GetId(),
+		AuthorID: input.GetAuthorId(),
+		Title:    input.GetTitle(),
+		Content:  input.GetContent(),
+	}
+}
+
 type mutationResolver struct{ *Resolver }
 
 // CreateBlog create a blog connected by grpc
@@ -30,23 +53,14 @@ func (r *mutationResolver) CreateBlog(ctx context.Context, input *NewBlog) (*Blo
 	defer blogclient.Close()
 
 	res, err := c.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{
-		Blog: &blogpb.Blog{
-			AuthorId: input.AuthorID,
-			Title:    input.Title,
-			Content:  input.Content,
-		},
+		Blog: newBlogToPbBlog(nil, input),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Cannot create blog: %v", err)
 	}
 
 	blogResult := res.GetBlog()
-	return &Blog{
-		ID:       blogResult.GetId(),
-		AuthorID: blogResult.GetAuthorId(),
-		Title:    blogResult.GetTitle(),
-		Content:  blogResult.GetContent(),
-	}, nil
+	return pbBlogToBlog(blogResult), nil
 }
 
 func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *NewBlog) (*Blog, error) {
@@ -61,12 +75,7 @@ func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *Ne
 	}
 
 	res, err := c.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{
-		Blog: &blogpb.Blog{
-			Id:       *id,
-			AuthorId: input.AuthorID,
-			Title:    input.Title,
-			Content:  input.Content,
-		},
+		Blog: newBlogToPbBlog(id, input),
 	})
 
 	if err != nil {
@@ -75,12 +84,7 @@ func (r *mutationResolver) UpdateBlog(ctx context.Context, id *string, input *Ne
 
 	blog := res.GetBlog()
 
-	return &Blog{
-		ID:       blog.GetId(),
-		AuthorID: blog.GetAuthorId(),
-		Title:    blog.GetTitle(),
-		Content:  blog.GetContent(),
-	}, nil
+	return pbBlogToBlog(blog), nil
 }
 func (r *mutationResolver) DeleteBlog(ctx context.Context, id *string) ([]*Blog, error) {
 	panic("not implemented")
@@ -117,12 +121,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 
 			blog := res.GetBlog()
 
-			result = append(result, &Blog{
-				ID:       blog.GetId(),
-				AuthorID: blog.GetAuthorId(),
-				Title:    blog.GetTitle(),
-				Content:  blog.GetContent(),
-			})
+			result = append(result, pbBlogToBlog(blog))
 		}
 	} else {
 		// if search has id retrieve a single collection
@@ -133,12 +132,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 
 		blog := res.GetBlog()
 
-		result = append(result, &Blog{
-			ID:       blog.GetId(),
-			AuthorID: blog.GetAuthorId(),
-			Title:    blog.GetTitle(),
-			Content:  blog.GetContent(),
-		})
+		result = append(result, pbBlogToBlog(blog))
 
 	}
 
