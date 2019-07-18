@@ -34,7 +34,7 @@ func main() {
 		handler.GraphQL(
 			graphqlblog.NewExecutableSchema(
 				graphqlblog.Config{
-					// Resolvers: &graphqlblog.Resolver{},
+					Resolvers: &graphqlblog.Resolver{},
 				},
 			),
 		),
