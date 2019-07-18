@@ -9,8 +9,40 @@ type Blog struct {
 	Content  string `json:"content"`
 }
 
+type Community struct {
+	ID      *int     `json:"id"`
+	Name    *string  `json:"name"`
+	Country *Country `json:"country"`
+}
+
+type Country struct {
+	ID   *int    `json:"id"`
+	Code *string `json:"code"`
+	Name *string `json:"name"`
+}
+
+type Municipality struct {
+	ID       *int      `json:"id"`
+	CodMun   *int      `json:"cod_mun"`
+	Name     *string   `json:"name"`
+	Province *Province `json:"province"`
+}
+
 type NewBlog struct {
 	AuthorID string `json:"author_id"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
+}
+
+type Province struct {
+	ID        *int       `json:"id"`
+	Name      *string    `json:"name"`
+	Community *Community `json:"community"`
+}
+
+type Town struct {
+	ID           *int          `json:"id"`
+	PostalCode   *string       `json:"postal_code"`
+	Name         *string       `json:"name"`
+	Municipality *Municipality `json:"municipality"`
 }

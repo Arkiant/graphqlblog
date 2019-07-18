@@ -1,0 +1,31 @@
+type Town {
+    id: Int
+    postal_code: String
+    name: String
+    municipality: Municipality
+}
+
+type Municipality {
+    id: Int
+    cod_mun: Int
+    name: String
+    province: Province
+}
+
+type Province {
+    id: Int
+    name: String
+    community: Community
+}
+
+type Community {
+    id: Int
+    name: String
+    country: Country
+}
+
+type Country {
+    id: Int
+    code: String
+    name: String
+}

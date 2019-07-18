@@ -1,0 +1,10 @@
+type Query {
+    entries(search: String = ""): [Blog!]!
+    geoinfo(postalcode: String = "", id: String = ""): [Town!]
+}
+
+type Mutation {
+    createBlog(input: NewBlog): Blog!
+    updateBlog(id: String, input: NewBlog): Blog!
+    deleteBlog(id: String):[Blog!]!
+}

@@ -124,3 +124,7 @@ func (r *queryResolver) Entries(ctx context.Context, search *string) ([]*Blog, e
 
 	return result, nil
 }
+
+func (r *queryResolver) Geoinfo(ctx context.Context, postalcode *string, id *string) ([]*Town, error) {
+	panic("Not implemented")
+}
