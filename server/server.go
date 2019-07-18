@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/middleware"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/arkiant/graphqlblog"
 	"github.com/go-chi/chi"
@@ -20,12 +22,19 @@ func main() {
 
 	router := chi.NewRouter()
 
+	router.Use(
+		middleware.Logger,
+		middleware.DefaultCompress,
+		middleware.StripSlashes,
+		middleware.Recoverer,
+	)
+
 	router.Handle("/", handler.Playground("GraphQL playground", "/query"))
 	router.Handle("/query",
 		handler.GraphQL(
 			graphqlblog.NewExecutableSchema(
 				graphqlblog.Config{
-					Resolvers: &graphqlblog.Resolver{},
+					// Resolvers: &graphqlblog.Resolver{},
 				},
 			),
 		),
